@@ -49,7 +49,7 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
     'invoice_prefix' => [
         'title'       => __('Invoice Prefix', 'wc-mixpay-gateway'),
         'type'        => 'text',
-        'description' => __('Please enter a prefix for your invoice numbers. If you use your nowpayments.io account for multiple stores ensure this prefix is unique.', 'wc-mixpaypayment-gateway'),
+        'description' => __('Please enter a prefix for your invoice numbers. If you use your mixin account for multiple stores ensure this prefix is unique.', 'wc-mixpaypayment-gateway'),
         'default'     => 'WC-WORDPRESS-',
     ],
     'debug' => [

@@ -156,7 +156,7 @@ function wc_mixpay_gateway_init()
          */
         function init_form_fields()
         {
-            require_once( 'includes/setting_form_fields.php' );
+            require_once('includes/setting_form_fields.php');
         }
 
         /**
