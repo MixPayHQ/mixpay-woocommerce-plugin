@@ -53,6 +53,7 @@ After you have installed the MixPay Payment plugin, the configuration steps are:
 4. Click “Save changes” and the gateway will be active.
 
 == Support ==
+
 If you run into any problems, or if you simply wish to discuss something with our experts, make sure you [contact us](bd@mixpay.me) with your query, and someone will help you shortly.
 
 == Changelog ==

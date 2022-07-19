@@ -1,8 +1,34 @@
 
 <?php
 
-$cache_key              = 'mixpay:settlement_asset_lists';
-$settlement_asset_lists = wp_cache_get($cache_key, 'mixpay');
+function get_settlement_asset_lists()
+{
+    $key                    = 'mixpay_settlement_asset_lists';
+    $settlement_asset_lists = get_option($key);
+
+    if(isset($settlement_asset_lists['expire_time']) && $settlement_asset_lists['expire_time'] > time()){
+        return $settlement_asset_lists['data'];
+    }
+
+    $response      = wp_remote_get(MIXPAY_SETTLEMENT_ASSETS_API);
+    $response_data = wp_remote_retrieve_body($response);
+    $response_data = json_decode($response_data, true)['data'] ?? [];
+
+    $lists = [];
+
+    foreach ($response_data as $asset) {
+        $lists[$asset['assetId']] = $asset['symbol'] . ' - ' . $asset['network'];
+    }
+
+    if(! empty($lists)) {
+        $settlement_asset_lists = $lists;
+        update_option($key, ['data' => $lists, 'expire_time' => time() + MIXPAY_ASSETS_EXPIRE_SECONDS]);
+    }
+
+    return $settlement_asset_lists;
+}
+
+$settlement_asset_lists = get_settlement_asset_lists();
 
 $this->form_fields = apply_filters( 'wc_offline_form_fields', [
 
@@ -36,9 +62,9 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
         "options"     => $settlement_asset_lists,
     ],
     'instructions' => [
-        'title'       => __( 'Instructions', 'wc-gateway-offline' ),
+        'title'       => __( 'Instructions', 'wc-gateway-gateway' ),
         'type'        => 'textarea',
-        'description' => __( '', 'wc-gateway-offline' ),
+        'description' => __( '', 'wc-gateway-gateway' ),
         'default'     => '',
     ],
     'domain' => [
@@ -49,7 +75,7 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
     'invoice_prefix' => [
         'title'       => __('Invoice Prefix', 'wc-mixpay-gateway'),
         'type'        => 'text',
-        'description' => __('Please enter a prefix for your invoice numbers. If you use your mixin account for multiple stores ensure this prefix is unique.', 'wc-mixpaypayment-gateway'),
+        'description' => __('Please enter a prefix for your invoice numbers. If you use your mixin account for multiple stores ensure this prefix is unique.', 'wc-mixpay-gateway'),
         'default'     => 'WC-WORDPRESS-',
     ],
     'debug' => [
