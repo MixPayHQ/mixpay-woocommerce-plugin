@@ -7,9 +7,9 @@
  * Description:             Cryptocurrency Payment Gateway.
  * Version:                 1.0.0
  * Author:                  MixPay Payment
- * Author URI:              https://mixpay.me/
- * License:                 proprietary
- * License URI:             http://www..org/
+ * Author URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
+ * License:                 GPLv2 or later
+ * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
  * Text Domain:             wc-mixpay-gateway
  * Domain Path:             /i18n/languages/
  */
