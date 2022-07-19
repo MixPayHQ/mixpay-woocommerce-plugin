@@ -7,9 +7,9 @@
  * Description:             Cryptocurrency Payment Gateway.
  * Version:                 1.0.0
  * Author:                  MixPay Payment
- * Author URI:              https://github.com/MixPayHQ/mixpay-woocommerce-plugin
- * License:                 GPLv2 or later
- * License URI:             http://www.gnu.org/licenses/gpl-2.0.html
+ * Author URI:              https://mixpay.me/
+ * License:                 proprietary
+ * License URI:             http://www..org/
  * Text Domain:             wc-mixpay-gateway
  * Domain Path:             /i18n/languages/
  */
@@ -255,7 +255,6 @@ function wc_mixpay_gateway_init()
 
             if ($order->status != 'completed' && get_post_meta($order->id, 'MixPay payment complete', true) != 'Yes') {
                 $order->add_order_note('Customer is being redirected to MixPay...');
-                $order->update_status('pending', 'Customer is being redirected to MixPay...');
             }
 
             $amount = number_format($order->get_total(), 8, '.', '');
@@ -298,7 +297,19 @@ function wc_mixpay_gateway_init()
             if(get_option('woocommerce_manage_stock') === 'yes'){
                 $woocommerce_hold_stock_minutes  = get_option('woocommerce_hold_stock_minutes') ?: 1;
                 $woocommerce_hold_stock_minutes  = $woocommerce_hold_stock_minutes > 240 ? 240 : $woocommerce_hold_stock_minutes;
-                $mixpay_args['expiredTimestamp'] = time() + $woocommerce_hold_stock_minutes * 60 - 30;
+                $created_time                    = strtotime($order->get_date_created());
+                $mixpay_args['expiredTimestamp'] = $created_time + $woocommerce_hold_stock_minutes * 60 - 30;
+
+                if(! $order->has_status('pending')){
+                    throw new Exception('The order has expired, please place another order');
+                }
+
+                if($mixpay_args['expiredTimestamp'] <= time()){
+                    if($order->has_status('pending')) {
+                        $order->update_status('cancelled', 'Unpaid order cancelled - time limit reached');
+                    }
+                    throw new Exception('The order has expired, please place another order');
+                }
             }
 
             $mixpay_args = apply_filters('woocommerce_mixpay_args', $mixpay_args);
@@ -397,9 +408,7 @@ function wc_mixpay_gateway_init()
                 $order->update_status('completed', 'Order has been paid.');
                 $result = ['code' => 'SUCCESS', 'status' => 200];
             } elseif($payments_result_data["status"] == "failed") {
-                if($status_before_update == 'processing') {
-                    $order->update_status('on-hold', 'Order is failed. Please contact ' . SUPPORT_EMAIL);
-                }
+                $order->update_status('cancelled', "Order has been cancelled, reason: {$payments_result_data['failureReason']}.");
             }
 
             if (! $order->has_status(['pending', 'processing'])){
