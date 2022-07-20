@@ -87,7 +87,7 @@ function wc_mixpay_add_to_gateways( $gateways ) {
         $gateways[] = 'WC_Gateway_mixpay';
     }
 
-	return $gateways;
+    return $gateways;
 }
 add_filter( 'woocommerce_payment_gateways', 'wc_mixpay_add_to_gateways' );
 
@@ -100,12 +100,12 @@ add_filter( 'woocommerce_payment_gateways', 'wc_mixpay_add_to_gateways' );
  */
 function wc_mixpay_gateway_plugin_links( $links ) {
 
-	$plugin_links = [
-	    '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=mixpay_gateway' ) . '">' . __( 'Configure', 'wc-mixpay-gateway' ) . '</a>',
-	    '<a href="mailto:' . SUPPORT_EMAIL . '">' . __( 'Email Developer', 'wc-mixpay-gateway' ) . '</a>'
-	];
+    $plugin_links = [
+        '<a href="' . admin_url( 'admin.php?page=wc-settings&tab=checkout&section=mixpay_gateway' ) . '">' . __( 'Configure', 'wc-mixpay-gateway' ) . '</a>',
+        '<a href="mailto:' . SUPPORT_EMAIL . '">' . __( 'Email Developer', 'wc-mixpay-gateway' ) . '</a>'
+    ];
 
-	return array_merge( $plugin_links, $links );
+    return array_merge( $plugin_links, $links );
 }
 add_filter( 'plugin_action_links_' . plugin_basename( __FILE__ ), 'wc_mixpay_gateway_plugin_links' );
 
@@ -178,11 +178,11 @@ function wc_mixpay_gateway_init()
             add_action('woocommerce_after_checkout_billing_form', [$this, 'is_valid_for_use']);
             add_action('woocommerce_page_wc-settings', [$this, 'is_valid_for_use']);
             add_action('woocommerce_update_options_payment_gateways_' . $this->id, [$this, 'process_admin_options']);
-			add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
+            add_action('woocommerce_thankyou_' . $this->id, [ $this, 'thankyou_page' ] );
             add_action('woocommerce_api_wc_gateway_mixpay', [$this, 'mixpay_callback']);
 
             // Customer Emails
-			add_action( 'woocommerce_email_before_order_table', [ $this, 'email_instructions' ], 10, 3 );
+            add_action( 'woocommerce_email_before_order_table', [ $this, 'email_instructions' ], 10, 3 );
         }
 
         /**
@@ -199,25 +199,25 @@ function wc_mixpay_gateway_init()
         /**
          * Output for the order received page.
          */
-		public function thankyou_page() {
-			if ( $this->instructions ) {
-				echo wpautop( wptexturize( $this->instructions ) );
-			}
+        public function thankyou_page() {
+            if ( $this->instructions ) {
+                echo wpautop( wptexturize( $this->instructions ) );
+            }
         }
 
-		/**
-		 * Add content to the WC emails.
-		 *
-		 * @access public
-		 * @param WC_Order $order
-		 * @param bool $sent_to_admin
-		 * @param bool $plain_text
-		 */
-		public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
-			if ( $this->instructions && ! $sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
-				echo wpautop(wptexturize($this->instructions));
-			}
-		}
+        /**
+         * Add content to the WC emails.
+         *
+         * @access public
+         * @param WC_Order $order
+         * @param bool $sent_to_admin
+         * @param bool $plain_text
+         */
+        public function email_instructions( $order, $sent_to_admin, $plain_text = false ) {
+            if ( $this->instructions && ! $sent_to_admin && $this->id === $order->get_payment_method() && $order->has_status( 'on-hold' ) ) {
+                echo wpautop(wptexturize($this->instructions));
+            }
+        }
 
         /**
          * Process the payment and return the result
@@ -241,14 +241,14 @@ function wc_mixpay_gateway_init()
             ];
         }
 
-         /**
-          * Generate the mixpay button link
-          *
-          * @access public
-          * @param mixed $order_id
-          * @param mixed $order
-          * @return string
-          */
+        /**
+         * Generate the mixpay button link
+         *
+         * @access public
+         * @param mixed $order_id
+         * @param mixed $order
+         * @return string
+         */
         function generate_mixpay_url($order)
         {
             global $woocommerce;
@@ -262,6 +262,7 @@ function wc_mixpay_gateway_init()
 
             if($rev === 0){
                 $order->update_status('completed', 'The order amount is zero.');
+
                 return $this->get_return_url($order);
             }elseif ($rev === -1){
                 throw new Exception("The order amount is incorrect, please contact customer");
@@ -300,15 +301,20 @@ function wc_mixpay_gateway_init()
                 $created_time                    = strtotime($order->get_date_created());
                 $mixpay_args['expiredTimestamp'] = $created_time + $woocommerce_hold_stock_minutes * 60 - 30;
 
+                $expiry_message = sprintf(
+                    __( 'Sorry, your session has expired. <a href="%s" class="wc-backward">Return to shop</a>', 'woocommerce' ),
+                    esc_url( wc_get_page_permalink( 'shop' ) )
+                );
+
                 if(! $order->has_status('pending')){
-                    throw new Exception('The order has expired, please place another order');
+                    throw new Exception($expiry_message);
                 }
 
                 if($mixpay_args['expiredTimestamp'] <= time()){
                     if($order->has_status('pending')) {
                         $order->update_status('cancelled', 'Unpaid order cancelled - time limit reached');
                     }
-                    throw new Exception('The order has expired, please place another order');
+                    throw new Exception($expiry_message);
                 }
             }
 
@@ -353,18 +359,18 @@ function wc_mixpay_gateway_init()
 
             <?php if ($this->enabled) { ?>
 
-                <table class="form-table">
-                    <?php
-                    $this->generate_settings_html();
-                    ?>
-                </table>
-                <!--/.form-table-->
+            <table class="form-table">
+                <?php
+                $this->generate_settings_html();
+                ?>
+            </table>
+            <!--/.form-table-->
 
-            <?php } else { ?>
-                <div class="inline error">
-                    <p><strong><?php _e('Gateway Disabled', 'woocommerce'); ?></strong>: <?php _e('MixPay Payment does not support your store currency.', 'woocommerce'); ?></p>
-                </div>
-            <?php }
+        <?php } else { ?>
+            <div class="inline error">
+                <p><strong><?php _e('Gateway Disabled', 'woocommerce'); ?></strong>: <?php _e('MixPay Payment does not support your store currency.', 'woocommerce'); ?></p>
+            </div>
+        <?php }
 
         }
 
@@ -391,7 +397,7 @@ function wc_mixpay_gateway_init()
         static function check_payments_result($order_id)
         {
             $mixpay_gatway        = (new self());
-            $payments_result_data = $mixpay_gatway->get_payments_result($order_id, $mixpay_gatway->payee_uuid);
+            $payments_result_data = $mixpay_gatway->get_payments_result($mixpay_gatway->invoice_prefix . $order_id, $mixpay_gatway->payee_uuid);
             $mixpay_gatway->update_order_status($order_id, $payments_result_data);
         }
 

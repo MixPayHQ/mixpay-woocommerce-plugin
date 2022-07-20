@@ -23,7 +23,7 @@ Customers will be thrilled to have a place to spend their hard-mined coins, espe
 
 MixPay Payment  does the heavy lifting, and all you need to do is register an [Mixin](https://mixin.one) account and install the plugin. Let us do the rest and power your store with crypto payments!
 
-The easiest way to accept online payments in a wide variety of cryptocurrencies. Custody-free, zero-fee and easy to implement anywhere.
+The easiest way to accept online payments in a wide variety of cryptocurrencies.
 
 == Installation ==
 
