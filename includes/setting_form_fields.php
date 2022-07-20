@@ -80,8 +80,7 @@ $this->form_fields = apply_filters( 'wc_offline_form_fields', [
     ],
     'debug' => [
         'title'       => __('Debug', 'wc-mixpay-gateway'),
-        'type'        => 'checkbox',
-        'default'     => 'false',
+        'type'        => 'text',
         'description' => __('(this will Slow down website performance) Send post data to debug', 'wc-mixpay-gateway'),
     ]
 ] );
